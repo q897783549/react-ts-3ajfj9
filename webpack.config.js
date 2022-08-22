@@ -1,28 +1,28 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin')
-const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
-  mode: "development",
-  entry: "./src/index.tsx",
+  mode: 'development',
+  entry: './src/index.tsx',
   devServer: {
-    contentBase: path.resolve(__dirname, "dist"),
+    contentBase: path.resolve(__dirname, 'dist'),
     hot: true,
     historyApiFallback: true,
     compress: true,
   },
   resolve: {
     alias: {
-      '@': path.resolve('src')
+      '@': path.resolve('src'),
     },
-    extensions: ['.ts', '.tsx', '.js', '.json']
+    extensions: ['.ts', '.tsx', '.js', '.json'],
   },
   module: {
     rules: [
       {
         test: /\.(js|jsx|ts|tsx)$/,
         use: {
-          loader: require.resolve('babel-loader')
+          loader: require.resolve('babel-loader'),
         },
         exclude: [/node_modules/],
       },
@@ -30,10 +30,10 @@ module.exports = {
         test: /\.(css|less)$/,
         use: [
           {
-            loader: "style-loader",
+            loader: 'style-loader',
           },
           {
-            loader: "css-loader",
+            loader: 'css-loader',
             options: {
               importLoaders: 1,
             },
@@ -42,18 +42,18 @@ module.exports = {
       },
       {
         test: /\.(png|svg|jpg|gif|jpeg)$/,
-        loader: 'file-loader'
+        loader: 'file-loader',
       },
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/,
-        loader: 'file-loader'
-      }
+        loader: 'file-loader',
+      },
     ],
   },
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
-      template: 'tpl/index.html'
+      template: 'tpl/index.html',
     }),
-  ]
+  ],
 };

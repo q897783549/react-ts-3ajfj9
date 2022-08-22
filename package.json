@@ -28,7 +28,8 @@
     "eject": "react-scripts eject"
   },
   "devDependencies": {
-    "react-scripts": "latest"
+    "react-scripts": "latest",
+    "prettier": "^2.2.1"
   },
   "browserslist": {
     "production": [

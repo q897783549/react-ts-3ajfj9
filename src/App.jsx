@@ -1,7 +1,7 @@
-import * as React from "react";
-import { useEffect } from "react";
-import { Button } from "antd";
-import { hero_world_fighter } from "./math/math";
+import * as React from 'react';
+import { useEffect } from 'react';
+import { Button } from 'antd';
+import { hero_world_fighter } from './math/math';
 import Big from 'big.js';
 
 import {
@@ -10,19 +10,21 @@ import {
   contractAddress,
   myAddress,
   privateKey,
-} from "./index";
-const Tx = require("ethereumjs-tx");
+} from './index';
+const Tx = require('ethereumjs-tx');
 
 let number = 0;
 let po = false;
-let disable = false
+let disable = false;
 export default function App() {
   useEffect(() => {}, []);
 
   const onClick = () => {
-      const str = web3.utils.BN(web3.utils.soliditySha3("2",1660900219,100)).toString()
-      const a  = new Big(str).mod(100)
-      console.log(parseFloat(a)) 
+    const str = web3.utils
+      .BN(web3.utils.soliditySha3('2', 1660900219, 100))
+      .toString();
+    const a = new Big(str).mod(100);
+    console.log(parseFloat(a));
   };
 
   const onClick2 = () => {
@@ -34,24 +36,24 @@ export default function App() {
   };
 
   const startCall = () => {
-    if(!disable ){
-      disable =true
-    web3.eth.getBlockNumber().then((res) => {
-      number = res;
-    });
-    const timer = setInterval(() => {
-      web3.eth.getBlockNumber().then((res1) => {
-        console.log(res1);
-        if (number != res1 && po === false) {
-          po = true;
-          web3.eth.getBlock(res1).then((res) => {
-            loopJudgment(res.timestamp);
-            clearInterval(timer);
-          });
-        }
+    if (!disable) {
+      disable = true;
+      web3.eth.getBlockNumber().then((res) => {
+        number = res;
       });
-    }, 200);
-  }
+      const timer = setInterval(() => {
+        web3.eth.getBlockNumber().then((res1) => {
+          console.log(res1);
+          if (number != res1 && po === false) {
+            po = true;
+            web3.eth.getBlock(res1).then((res) => {
+              loopJudgment(res.timestamp);
+              clearInterval(timer);
+            });
+          }
+        });
+      }, 200);
+    }
   };
 
   const loopJudgment = (timestamp) => {
@@ -77,9 +79,9 @@ export default function App() {
         nonce: web3.utils.toHex(txCount),
         to: contractAddress,
         gasLimit: web3.utils.toHex(500000),
-        gasPrice: web3.utils.toHex(web3.utils.toWei("10", "gwei")),
+        gasPrice: web3.utils.toHex(web3.utils.toWei('10', 'gwei')),
         //  需要修改
-        data: contract.methods.fighter(39,4).encodeABI(),
+        data: contract.methods.fighter(39, 4).encodeABI(),
         // data: contract.methods.Timestamp(3443443).encodeABI(),
       };
 
@@ -97,25 +99,25 @@ export default function App() {
       });
       tx.sign(privateKey);
       const serializedTx = tx.serialize();
-      const raw = "0x" + serializedTx.toString("hex");
+      const raw = '0x' + serializedTx.toString('hex');
       web3.eth.sendSignedTransaction(raw, (err, txHash) => {
-        console.log("txHash:", txHash);
+        console.log('txHash:', txHash);
         number = 0;
         po = false;
-        disable =false;
+        disable = false;
       });
     });
   };
 
   return (
     <div>
-      <Button size="ml" onClick={onClick}>
+      <Button size='ml' onClick={onClick}>
         测试
       </Button>
-      <Button size="ml" onClick={onClick2}>
+      <Button size='ml' onClick={onClick2}>
         获得最新区块信息
       </Button>
-      <Button size="ml"  onClick={startCall}>
+      <Button size='ml' onClick={startCall}>
         Start
       </Button>
     </div>
