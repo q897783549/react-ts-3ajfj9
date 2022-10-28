@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import { Button } from 'antd';
-import { hero_world_fighter } from './math/math';
+import { hero_world_fighter, d7bd74b3 } from './math/math';
 import Big from 'big.js';
-
+import sha256 from 'js-sha256';
 import {
   web3,
   contract,
@@ -14,54 +14,112 @@ import {
 const Tx = require('ethereumjs-tx');
 
 let number = 0;
-let po = false;
+let total = 0;
+let lock = false;
 let disable = false;
 export default function App() {
   useEffect(() => {}, []);
 
-  const onClick = () => {
-    const str = web3.utils
-      .BN(web3.utils.soliditySha3('2', 1660900219, 100))
-      .toString();
-    const a = new Big(str).mod(100);
-    console.log(parseFloat(a));
+  const onClick = async () => {
+    // const str = web3.utils
+    //   .BN(web3.utils.soliditySha3('2', 1660900219, 100))
+    //   .toString();
+    // const a = new Big(str).mod(100);
+    // console.log(parseFloat(a));
+
+    // web3.eth.getBlock('22482969').then(
+    //   (res) => {
+    //     console.log(res);
+    //   },
+    const timer = setInterval(async () => {
+      // web3.eth
+      //   .getStorageAt('0x19d3f24eb8294e0ae149b06cff486b0cfc64f4c8', 201)
+      //   .then((res) => {
+      //     console.log(res);
+      //   });
+      // web3.eth.getBlockNumber().then((res1) => {
+      //   web3.eth.getBlock(res1).then(async (res) => {
+      //     console.log(res, CryptoJS.SHA256([blockNumber, nonce, data, prev]));
+      //   });
+      // });
+      // let returnvalue2 = await contract.methods
+      //   .getRandom(myAddress, 32332, 2222)
+      //   .call();
+      // console.log(returnvalue2, 222);
+    }, 1000);
+    // console.log(
+    //   parseFloat(
+    //     new Big(
+    //       web3.utils
+    //         .BN(
+    //           web3.utils.soliditySha3(
+    //             '0x7686Ed8dde3f74Ef9e55b3b6ba49E20770e46011',
+    //             '0x1889a60cb8f04f1018f80941460db34f3965b4937ced6aa9880d6d14637bb2b0',
+    //             123,
+    //             1666704900,
+    //             '0x00000000000000000000000000000000000000000000000000000000000026eb',
+    //           ),
+    //         )
+    //         .toString(),
+    //     ).mod(100),
+    //   ),
+    // );
+    // );
   };
 
   const onClick2 = () => {
     web3.eth.getBlockNumber().then((id) => {
-      web3.eth.getBlock('20573816').then((res) => {
-        console.log(res);
-      });
+      // web3.eth.getBlock('22482969').then((res) => {
+      console.log(id);
+      // });
     });
   };
 
-  const startCall = () => {
+  const startCall = async () => {
     if (!disable) {
       disable = true;
-      web3.eth.getBlockNumber().then((res) => {
-        number = res;
+      await web3.eth.getBlock('latest').then((block) => {
+        number = block.number;
+        console.log(block.number);
       });
       const timer = setInterval(() => {
-        web3.eth.getBlockNumber().then((res1) => {
-          console.log(res1);
-          if (number != res1 && po === false) {
-            po = true;
-            web3.eth.getBlock(res1).then((res) => {
-              loopJudgment(res.timestamp);
-              clearInterval(timer);
-            });
+        web3.eth.getBlock('latest').then((block) => {
+          console.log(block.number);
+          if (number != block.number && lock === false) {
+            lock = true;
+            console.log(
+              block.number,
+              new Date(block.timestamp * 1000).getTime() / 1000,
+            );
+            send(block.timestamp);
+            clearInterval(timer);
           }
         });
-      }, 200);
+      }, 50);
     }
   };
 
-  const loopJudgment = (timestamp) => {
+  const reGetTotal = async () => {
+    await web3.eth
+      .getStorageAt('0x19d3f24eb8294e0ae149b06cff486b0cfc64f4c8', 201)
+      .then((res) => {
+        total = res;
+      });
+  };
+  const loopJudgment = (timestamp, hash) => {
     timestamp = timestamp + 3;
+    let time = 0;
     const timer = setInterval(() => {
-      let val = hero_world_fighter(timestamp + 9);
-      console.log(val, new Date(timestamp * 1000), timestamp);
-      if (val <= 30) {
+      time++;
+      if (time == 7) {
+        reGetTotal();
+        time = 0;
+      }
+      // let val = hero_world_fighter(timestamp + 9);
+      let val = d7bd74b3(timestamp, hash, total);
+      let val2 = d7bd74b3(timestamp, hash, total + 1);
+      console.log(val, new Date(timestamp * 1000).getTime(), timestamp);
+      if (val <= 50 && val2 <= 50) {
         // console.log("send")
         //币安主网
         setTimeout(() => {
@@ -70,10 +128,10 @@ export default function App() {
         clearInterval(timer);
       }
       timestamp = timestamp + 3;
-    }, 3000);
+    }, 200);
   };
 
-  const send = () => {
+  const send = async (timestamp) => {
     web3.eth.getTransactionCount(myAddress, (err, txCount) => {
       const txObject = {
         nonce: web3.utils.toHex(txCount),
@@ -81,8 +139,8 @@ export default function App() {
         gasLimit: web3.utils.toHex(500000),
         gasPrice: web3.utils.toHex(web3.utils.toWei('10', 'gwei')),
         //  需要修改
-        data: contract.methods.fighter(39, 4).encodeABI(),
-        // data: contract.methods.Timestamp(3443443).encodeABI(),
+        // data: contract.methods.fighter(39, 4).encodeABI(),
+        data: contract.methods.Timestamp(timestamp).encodeABI(),
       };
 
       // 签署交易
@@ -100,10 +158,11 @@ export default function App() {
       tx.sign(privateKey);
       const serializedTx = tx.serialize();
       const raw = '0x' + serializedTx.toString('hex');
+      console.log(new Date().getTime() / 1000);
       web3.eth.sendSignedTransaction(raw, (err, txHash) => {
         console.log('txHash:', txHash);
         number = 0;
-        po = false;
+        lock = false;
         disable = false;
       });
     });
